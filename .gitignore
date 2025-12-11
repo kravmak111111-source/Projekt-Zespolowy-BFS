@@ -1,0 +1,12 @@
+# Skompilowane pliki
+*.exe
+*.o
+*.out
+*.app
+
+# Folder konfiguracyjny VS Code (każdy ma swoją konfigurację)
+.vscode/
+
+# Pliki systemowe
+.DS_Store
+Thumbs.db
