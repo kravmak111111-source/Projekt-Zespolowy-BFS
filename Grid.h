@@ -2,7 +2,9 @@
 #define GRID_H
 
 #include <iostream>
-
+#include <cstdlib>  
+#include <ctime>
+#include <random>
 struct Point {
     int x, y;
     bool operator==(const Point& other) const { return x == other.x && y == other.y; }
@@ -85,11 +87,11 @@ public:
 
         // Wypisywanie
         std::cout << "  ";
-        for(int x=0; x<width; x++) std::cout << x % 10;
+        for(int x=0; x<width; x++) std::cout << x % 10 << " ";
         std::cout << "\n";
         for(int y=0; y<height; y++) {
             std::cout << y % 10 << " ";
-            for(int x=0; x<width; x++) std::cout << display[y][x];
+            for(int x=0; x<width; x++) std::cout << display[y][x] << " ";
             std::cout << "\n";
         }
 
@@ -97,6 +99,37 @@ public:
         for(int i=0; i<height; i++) delete[] display[i];
         delete[] display;
     }
+    void generateObstacles(int wallCount, int width, int height, Point start, Point goal) {
+    std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> xDist(0, width - 1);
+    std::uniform_int_distribution<int> yDist(0, height - 1);
+    std::uniform_int_distribution<int> lenDist(2, 6);   // krótkie ściany
+    std::uniform_int_distribution<int> dirDist(0, 1);   // 0 = poziom, 1 = pion
+
+    for (int w = 0; w < wallCount; w++) {
+        int x = xDist(rng);
+        int y = yDist(rng);
+        int len = lenDist(rng);
+        bool vertical = dirDist(rng);
+
+        for (int i = 0; i < len; i++) {
+            int nx = x + (vertical ? 0 : i);
+            int ny = y + (vertical ? i : 0);
+
+
+            if ((nx == start.x && ny == start.y) ||
+                (nx == goal.x  && ny == goal.y))
+                continue;
+            if (rand() % 4 != 0) // 25% szans na "dziurę"
+                addObstacle(nx, ny);
+            }
+
+
+
+
+     }
+}
+
 };
 
 #endif
