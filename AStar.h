@@ -164,6 +164,7 @@ public:
                 if (!grid.isWalkable(nx, ny)) continue;
                 if (closed[ny][nx]) continue;
 
+                int movementCost = grid.getCost(nx, ny);
                 int tentativeG = gScore[current.y][current.x] + 1;
 
                 if (tentativeG < gScore[ny][nx]) {

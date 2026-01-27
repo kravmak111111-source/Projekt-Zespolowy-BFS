@@ -71,6 +71,7 @@ public:
                 if (!grid.isWalkable(nx, ny))
                     continue;
 
+                int movementCost = grid.getCost(nx, ny);
                 int newCost = dist[p.y][p.x] + 1;
 
                 if (newCost < dist[ny][nx]) {

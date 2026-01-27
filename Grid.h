@@ -30,62 +30,88 @@ struct PathResult {
 };
 
 class Grid {
-public:
-    int width;
-    int height;
-    int** cells; // Tablica 2D (wskaźnik na wskaźniki)
+    public:
+        int width;
+        int height;
+        int** cells; // Tablica 2D (wskaźnik na wskaźniki)
 
-    Grid(int w, int h) : width(w), height(h) {
-        // Alokacja tablicy wierszy
-        cells = new int*[height];
-        for (int i = 0; i < height; ++i) {
-            // Alokacja kolumn dla każdego wiersza i zerowanie
-            cells[i] = new int[width];
-            for (int j = 0; j < width; ++j) {
-                cells[i][j] = 0;
+        Grid(int w, int h) : width(w), height(h) {
+            // Alokacja tablicy wierszy
+            cells = new int*[height];
+            for (int i = 0; i < height; ++i) {
+                // Alokacja kolumn dla każdego wiersza i zerowanie
+                cells[i] = new int[width];
+                for (int j = 0; j < width; ++j) {
+                    cells[i][j] = 0;
+                }
             }
         }
-    }
 
-    // WAŻNE: Destruktor, żeby posprzątać pamięć (nie mamy vectora, który robi to sam)
-    ~Grid() {
-        for (int i = 0; i < height; ++i) {
-            delete[] cells[i];
+        // WAŻNE: Destruktor, żeby posprzątać pamięć (nie mamy vectora, który robi to sam)
+        ~Grid() {
+            for (int i = 0; i < height; ++i) {
+                delete[] cells[i];
+            }
+            delete[] cells;
         }
-        delete[] cells;
-    }
 
-    void addObstacle(int x, int y) {
-        if (isValid(x, y)) cells[y][x] = 1;
-    }
+        void addObstacle(int x, int y) {
+            if (isValid(x, y)) cells[y][x] = 1;
+        }
 
-    bool isWalkable(int x, int y) const {
-        return isValid(x, y) && cells[y][x] != 1;
-    }
+        // Dodawanie trudnego terenu (np. błoto, woda)
+        // Ustawiamy wartość np. 5 (koszt przejścia 5 razy większy niż zwykle)
+        void addMud(int x, int y, int cost) {
+            if (isValid(x, y) && cells[y][x] != 1) { 
+                cells[y][x] = cost; 
+            }
+        }
 
-    bool isValid(int x, int y) const {
-        return x >= 0 && x < width && y >= 0 && y < height;
-    }
+        // Pobieranie kosztu pola
+        int getCost(int x, int y) const {
+            if (!isValid(x, y)) return 9999;
+            if (cells[y][x] == 1) return 9999; // Ściana
+            if (cells[y][x] == 0) return 1;    // Zwykłe pole ma koszt 1
+            return cells[y][x];                // Błoto zwraca swoją wagę (np. 5)
+        }
 
-    void print(Point* path = nullptr, int pathLength = 0) const {
-        // Rysowanie mapy - musimy stworzyć bufor znaków ręcznie
+        bool isWalkable(int x, int y) const {
+            return isValid(x, y) && cells[y][x] != 1;
+        }
+
+        bool isValid(int x, int y) const {
+            return x >= 0 && x < width && y >= 0 && y < height;
+        }
+
+        void print(Point* path = nullptr, int pathLength = 0, char pathSymbol = '*') const {
+        // Alokacja bufora (bez zmian)
         char** display = new char*[height];
         for(int i=0; i<height; i++) {
             display[i] = new char[width];
             for(int j=0; j<width; j++) {
-                display[i][j] = (cells[i][j] == 1) ? '#' : '.';
+                if (cells[i][j] == 1) display[i][j] = '#';      // Ściana
+                else if (cells[i][j] > 1) display[i][j] = '~';  // Błoto
+                else display[i][j] = '.';                       // Trawa
             }
         }
 
-        // Nanoszenie ścieżki
-        if (path != nullptr) {
+        // Nanoszenie ścieżki z wybranym symbolem
+        if (path != nullptr && pathLength > 0) {
             for(int i = 0; i < pathLength; i++) {
                 Point p = path[i];
-                if(isValid(p.x, p.y)) display[p.y][p.x] = '*';
+                if(isValid(p.x, p.y)) {
+                    display[p.y][p.x] = pathSymbol; // Używamy znaku przekazanego w argumencie
+                }
             }
+            
+            // Opcjonalnie: Nadpisz Start i Koniec, żeby były super widoczne
+            Point start = path[0];
+            Point end = path[pathLength - 1];
+            if(isValid(start.x, start.y)) display[start.y][start.x] = 'S'; // Start
+            if(isValid(end.x, end.y))     display[end.y][end.x]   = 'M'; // Meta
         }
 
-        // Wypisywanie
+        // Wypisywanie (bez zmian)
         std::cout << "  ";
         for(int x=0; x<width; x++) std::cout << x % 10 << " ";
         std::cout << "\n";
@@ -95,10 +121,11 @@ public:
             std::cout << "\n";
         }
 
-        // Sprzątanie po rysowaniu
+        // Sprzątanie (bez zmian)
         for(int i=0; i<height; i++) delete[] display[i];
         delete[] display;
     }
+    
     void generateObstacles(int wallCount, int width, int height, Point start, Point goal) {
     std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> xDist(0, width - 1);
