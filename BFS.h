@@ -2,13 +2,16 @@
 #define BFS_H
 
 #include "Grid.h"
+#include "Stats.h"
 #include <queue> // Zakładam, że queue jest dozwolone. Jeśli nie, pisz.
 
 class BFS {
 public:
-    static PathResult findPath(const Grid& grid, Point start, Point goal) {
+    static PathResult findPath(const Grid& grid, Point start, Point goal, AlgoStats* stats = nullptr) {
         std::queue<Point> q;
         q.push(start);
+
+        int visitedCount = 0;
 
         // Alokacja tablicy odwiedzonych (visited) i rodziców (parent)
         bool** visited = new bool*[grid.height];
@@ -24,6 +27,7 @@ public:
         }
 
         visited[start.y][start.x] = true;
+        visitedCount++;
         
         int dx[] = {0, 0, -1, 1};
         int dy[] = {-1, 1, 0, 0};
@@ -44,6 +48,7 @@ public:
 
                 if (grid.isWalkable(nx, ny) && !visited[ny][nx]) {
                     visited[ny][nx] = true;
+                    visitedCount++;
                     parent[ny][nx] = current;
                     q.push({nx, ny});
                 }
@@ -83,7 +88,11 @@ public:
         }
         delete[] visited;
         delete[] parent;
+        if (stats) {
+            stats->visited = visitedCount;
+        }   
 
+        
         return result;
     }
 };

@@ -4,6 +4,7 @@
 #include "BFS.h"
 #include "Dijkstra.h"
 #include "AStar.h"
+#include "Stats.h"
 
 
 int main() {
@@ -34,6 +35,7 @@ int main() {
     Point goal = {width - 3, height - 3};
     map.generateObstacles(150, width, height, start, goal); // 20 małych ścian
     
+    AlgoStats bfsStats, dijkstraStats, aStarStats;
 
     // Generujemy trudny teren "błoto", tworzy się kilka plam.
     srand(time(nullptr));
@@ -56,9 +58,9 @@ int main() {
 
     std::cout << "\n--- BFS (Ignoruje wagi, idzie na oslep przez bloto) ---\n";
     auto t1 = std::chrono::high_resolution_clock::now();
-    PathResult bfsPath = BFS::findPath(map, start, goal);
+    PathResult bfsPath = BFS::findPath(map, start, goal, &bfsStats );
     auto t2 = std::chrono::high_resolution_clock::now();
-    double timeBFS = std::chrono::duration<double, std::milli>(t2 - t1).count();
+    bfsStats.timeMs = std::chrono::duration<double, std::milli>(t2 - t1).count();
 
     if (bfsPath.length > 0) {
     std::cout << "Znaleziono! Dlugosc: " << bfsPath.length << "\n";
@@ -72,9 +74,9 @@ int main() {
 
     std::cout << "\n--- Dijkstra (Omija bloto jesli warto) ---\n";
     t1 = std::chrono::high_resolution_clock::now();
-    PathResult dpath = Dijkstra::findPath(map, start, goal);
+    PathResult dpath = Dijkstra::findPath(map, start, goal, &dijkstraStats );
     t2 = std::chrono::high_resolution_clock::now();
-    double timeDijkstra = std::chrono::duration<double, std::milli>(t2 - t1).count();
+    dijkstraStats.timeMs = std::chrono::duration<double, std::milli>(t2 - t1).count();
 
     if (dpath.length > 0) {
     std::cout << "Znaleziono! Dlugosc: " << dpath.length << "\n";
@@ -86,11 +88,11 @@ int main() {
     // A*
 
      std::cout << "\n--- A* (Heurystyka + wagi) ---\n";
-    AStarStats st;
+    
     t1 = std::chrono::high_resolution_clock::now();
-    PathResult aStarPath = AStar::findPath(map, start, goal, &st);
+    PathResult aStarPath = AStar::findPath(map, start, goal, &aStarStats );
     t2 = std::chrono::high_resolution_clock::now();
-    double timeAStar = std::chrono::duration<double, std::milli>(t2 - t1).count();
+    aStarStats.timeMs = std::chrono::duration<double, std::milli>(t2 - t1).count();
 
     if (aStarPath.length > 0) {
     std::cout << "A: Znaleziono! Dlugosc: " << aStarPath.length << "\n";
@@ -102,9 +104,9 @@ int main() {
     // Podsumowanie
     // ======================
     std::cout << "\n=== WYNIKI ===\n";
-    std::cout << "BFS:      " << timeBFS << " ms (Moze isc przez bloto, bo ignoruje koszt)\n";
-    std::cout << "Dijkstra: " << timeDijkstra << " ms (Szuka najtanszej drogi)\n";
-    std::cout << "A*:       " << timeAStar << " ms (Najszybszy dzieki heurystyce)\n";
+    std::cout << "BFS:      " << bfsStats.timeMs << " ms  odwiedzone wezly: " << bfsStats.visited << " (Moze isc przez bloto, bo ignoruje koszt)\n";
+    std::cout << "Dijkstra: " << dijkstraStats.timeMs << " ms  odwiedzone wezly: " << dijkstraStats.visited << " (Szuka najtanszej drogi)\n";
+    std::cout << "A*:       " << aStarStats.timeMs << " ms  odwiedzone wezly: " << aStarStats.visited << " (Najszybszy dzieki heurystyce)\n";
 
     // ======================
     // Porównanie (optymalność)

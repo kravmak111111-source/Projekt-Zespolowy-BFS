@@ -2,14 +2,11 @@
 #define ASTAR_H
 
 #include "Grid.h"
+#include "Stats.h"
 #include <climits>  // INT_MAX
 #include <cstdlib>  // abs
 
-// Opcjonalne statystyki do pokazania że A* jest szybsze
-struct AStarStats {
-    int expanded = 0; // ile węzłów przetworzono (zdjęto z kopca)
-    int pushed   = 0; // ile węzłów wrzucono do kopca
-};
+
 
 class AStar {
 private:
@@ -100,7 +97,7 @@ private:
     }
 
 public:
-    static PathResult findPath(const Grid& grid, Point start, Point goal, AStarStats* stats = nullptr) {
+    static PathResult findPath(const Grid& grid, Point start, Point goal, AlgoStats* stats = nullptr) {
         PathResult result; // points=nullptr, length=0 (konstruktor z Grid.h)
 
         // Edge case
@@ -142,7 +139,7 @@ public:
 
         while (!open.empty()) {
             Node cur = open.popMin();
-            if (stats) stats->expanded++;
+            if (stats) stats->visited++;
 
             Point current = cur.p;
 
@@ -165,7 +162,7 @@ public:
                 if (closed[ny][nx]) continue;
 
                 int movementCost = grid.getCost(nx, ny);
-                int tentativeG = gScore[current.y][current.x] + 1;
+                int tentativeG = gScore[current.y][current.x] + movementCost;
 
                 if (tentativeG < gScore[ny][nx]) {
                     gScore[ny][nx] = tentativeG;

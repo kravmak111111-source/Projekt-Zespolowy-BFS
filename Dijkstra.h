@@ -2,12 +2,13 @@
 #define DIJKSTRA_H
 
 #include "Grid.h"
+#include "Stats.h"
 #include <queue>
 #include <limits>
 
 class Dijkstra {
 public:
-    static PathResult findPath(const Grid& grid, Point start, Point goal) {
+    static PathResult findPath(const Grid& grid, Point start, Point goal, AlgoStats* stats = nullptr) {
 
         // =============================
         // STRUKTURA DO KOLEJKI
@@ -23,6 +24,7 @@ public:
 
         std::priority_queue<Node, std::vector<Node>, std::greater<Node>> pq;
         pq.push({start, 0});
+        int visitedCount = 0;
 
         // =============================
         // TABLICE POMOCNICZE
@@ -52,6 +54,7 @@ public:
         while (!pq.empty()) {
             Node current = pq.top();
             pq.pop();
+            visitedCount++;
 
             Point p = current.p;
 
@@ -72,7 +75,7 @@ public:
                     continue;
 
                 int movementCost = grid.getCost(nx, ny);
-                int newCost = dist[p.y][p.x] + 1;
+                int newCost = dist[p.y][p.x] + movementCost;
 
                 if (newCost < dist[ny][nx]) {
                     dist[ny][nx] = newCost;
@@ -121,6 +124,9 @@ public:
         }
         delete[] dist;
         delete[] parent;
+        if (stats) {
+            stats->visited = visitedCount;
+        }
 
         return result;
     }
