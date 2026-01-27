@@ -83,6 +83,12 @@ class Grid {
             return x >= 0 && x < width && y >= 0 && y < height;
         }
 
+        void clear() {
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    cells[y][x] = 0;  // trawa 
+        }
+
         void print(Point* path = nullptr, int pathLength = 0, char pathSymbol = '*') const {
         // Alokacja bufora (bez zmian)
         char** display = new char*[height];
@@ -126,10 +132,10 @@ class Grid {
         delete[] display;
     }
     
-    void generateObstacles(int wallCount, int width, int height, Point start, Point goal) {
+    void generateObstacles(int wallCount, Point start, Point goal) {
     std::mt19937 rng(std::random_device{}());
-    std::uniform_int_distribution<int> xDist(0, width - 1);
-    std::uniform_int_distribution<int> yDist(0, height - 1);
+    std::uniform_int_distribution<int> xDist(0, this->width - 1);
+    std::uniform_int_distribution<int> yDist(0, this->height - 1);
     std::uniform_int_distribution<int> lenDist(2, 6);   // krótkie ściany
     std::uniform_int_distribution<int> dirDist(0, 1);   // 0 = poziom, 1 = pion
 

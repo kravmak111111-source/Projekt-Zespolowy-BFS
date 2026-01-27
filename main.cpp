@@ -33,7 +33,24 @@ int main() {
 */
     Point start = {0, 0};
     Point goal = {width - 3, height - 3};
-    map.generateObstacles(150, width, height, start, goal); // 20 małych ścian
+    PathResult testPath;
+    do {
+        map.clear();
+        map.generateObstacles(150, start, goal); // 150 małych ścian  
+
+       for(int i=0; i<300; i++) {
+        int mx = rand() % width;
+        int my = rand() % height;
+        // Nie stawiaj błota na starcie/meczu ani na ścianach
+        if((mx != start.x || my != start.y) && (mx != goal.x || my != goal.y)) {
+             map.addMud(mx, my, 5); // Koszt 5!
+        }
+
+        }
+        testPath = BFS::findPath(map, start, goal);
+
+    }while(testPath.length == 0); // Powtarzaj aż będzie ścieżka
+    
     
     AlgoStats bfsStats, dijkstraStats, aStarStats;
 
@@ -104,9 +121,9 @@ int main() {
     // Podsumowanie
     // ======================
     std::cout << "\n=== WYNIKI ===\n";
-    std::cout << "BFS:      " << bfsStats.timeMs << " ms  odwiedzone wezly: " << bfsStats.visited << " (Moze isc przez bloto, bo ignoruje koszt)\n";
-    std::cout << "Dijkstra: " << dijkstraStats.timeMs << " ms  odwiedzone wezly: " << dijkstraStats.visited << " (Szuka najtanszej drogi)\n";
-    std::cout << "A*:       " << aStarStats.timeMs << " ms  odwiedzone wezly: " << aStarStats.visited << " (Najszybszy dzieki heurystyce)\n";
+    std::cout << "BFS:      " << bfsStats.timeMs << " ms  odwiedzone : " << bfsStats.visited << " (Moze isc przez bloto, bo ignoruje koszt)\n";
+    std::cout << "Dijkstra: " << dijkstraStats.timeMs << " ms  odwiedzone : " << dijkstraStats.visited << " (Szuka najtanszej drogi)\n";
+    std::cout << "A*:       " << aStarStats.timeMs << " ms  odwiedzone : " << aStarStats.visited << " (Najszybszy i najdokladniejszy dzieki heurystyce)\n";
 
     // ======================
     // Porównanie (optymalność)
