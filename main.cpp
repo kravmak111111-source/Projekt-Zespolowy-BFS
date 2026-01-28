@@ -10,31 +10,18 @@
 int main() {
     const int width = 50;
     const int height = 30;
+    int attempts = 0;
+    const int MAX_ATTEMPTS = 100;
+
     std::cout << "=== PROJEKT BEZ VECTOROW ===\n";
 
     Grid map(width, height);
-/*
-    srand(time(nullptr)); 
 
-    int x = rand() % width;
-    int y = rand() % height;
-
-    bool vertical = rand() % 2;
-    int length = rand() % 10 + 10; 
-
-    // Sciana
-    for (int i = 0; i < length; i++) {
-        if (vertical)
-            map.addObstacle(x, y + i);
-        else
-             map.addObstacle(x + i, y);
-    }
-              for(int i = 2; i < 8; i++) map.addObstacle(5, i);
-*/
     Point start = {0, 0};
     Point goal = {width - 3, height - 3};
     PathResult testPath;
     do {
+        attempts++;
         map.clear();
         map.generateObstacles(150, start, goal); // 150 małych ścian  
 
@@ -49,8 +36,12 @@ int main() {
         }
         testPath = BFS::findPath(map, start, goal);
 
-    }while(testPath.length == 0); // Powtarzaj aż będzie ścieżka
+    }while(testPath.length == 0 && attempts < MAX_ATTEMPTS); // Powtarza aż będzie ścieżka
     
+    if (attempts == MAX_ATTEMPTS) {
+        std::cout << "Nie udalo sie wygenerowac mapy z dostepna sciezka po " << MAX_ATTEMPTS << " probach.\n";
+        return 1;
+    }
     
     AlgoStats bfsStats, dijkstraStats, aStarStats;
 
@@ -74,6 +65,7 @@ int main() {
     // BFS
 
     std::cout << "\n--- BFS (Ignoruje wagi, idzie na oslep przez bloto) ---\n";
+
     auto t1 = std::chrono::high_resolution_clock::now();
     PathResult bfsPath = BFS::findPath(map, start, goal, &bfsStats );
     auto t2 = std::chrono::high_resolution_clock::now();
@@ -90,6 +82,7 @@ int main() {
 
 
     std::cout << "\n--- Dijkstra (Omija bloto jesli warto) ---\n";
+
     t1 = std::chrono::high_resolution_clock::now();
     PathResult dpath = Dijkstra::findPath(map, start, goal, &dijkstraStats );
     t2 = std::chrono::high_resolution_clock::now();
@@ -104,7 +97,7 @@ int main() {
 
     // A*
 
-     std::cout << "\n--- A* (Heurystyka + wagi) ---\n";
+    std::cout << "\n--- A* (Heurystyka + wagi) ---\n";
     
     t1 = std::chrono::high_resolution_clock::now();
     PathResult aStarPath = AStar::findPath(map, start, goal, &aStarStats );
@@ -125,17 +118,7 @@ int main() {
     std::cout << "Dijkstra: " << dijkstraStats.timeMs << " ms  odwiedzone : " << dijkstraStats.visited << " (Szuka najtanszej drogi)\n";
     std::cout << "A*:       " << aStarStats.timeMs << " ms  odwiedzone : " << aStarStats.visited << " (Najszybszy i najdokladniejszy dzieki heurystyce)\n";
 
-    // ======================
-    // Porównanie (optymalność)
-    // ======================
-    if (bfsPath.length > 0 && aStarPath.length > 0) {
-        if (bfsPath.length != aStarPath.length) {
-            std::cout << "\n[CIEKAWOSTKA] Algorytmy wybraly rozne drogi!\n";
-            std::cout << "BFS (krotsza w krokach, ale drozsza): " << bfsPath.length << " krokow.\n";
-            std::cout << "A* (moze byc dluzsza w krokach, ale omija bloto): " << aStarPath.length << " krokow.\n";
-        }
-    }
-
+  
     bfsPath.free();
     aStarPath.free();
 
